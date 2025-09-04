@@ -14,8 +14,8 @@ cleaned_trades as (
         nullif(trim(client_external_id), '') as client_external_id,
         
         -- Trade details
-        upper(trim(symbol)) as symbol,
-        lower(trim(side)) as side,
+        trim(symbol) as symbol,
+        trim(side) as side,
         cast(volume as float64) as volume,
         
         -- Timestamps (convert to proper datetime if needed)
@@ -34,10 +34,10 @@ cleaned_trades as (
         cast(realized_pnl as float64) + cast(commission as float64) as net_pnl,
         
         -- Additional fields
-        book_flag,
-        counterparty,
-        upper(trim(quote_currency)) as quote_currency,
-        lower(trim(status)) as status,
+        trim(book_flag) as book_flag,
+        trim(counterparty) as counterparty,
+        trim(quote_currency) as quote_currency,
+        trim(status) as status,
         
         -- Metadata
         current_timestamp() as _loaded_at
@@ -49,7 +49,7 @@ cleaned_trades as (
       and account_id is not null
       and symbol is not null
       and volume > 0
-      and side in ('buy', 'sell', 'BUY', 'SELL')
+      and side is not null
 )
 
 select * from cleaned_trades
