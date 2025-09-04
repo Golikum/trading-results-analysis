@@ -3,8 +3,8 @@ version: 2
 sources:
   - name: raw_trading_data
     description: "Raw trading data exported from production systems"
-    database: your-gcp-project-id  # Replace with your actual GCP project ID
-    schema: raw_data
+    database: dbt-learn-366003
+    schema: trading_raw_data
     
     tables:
       - name: trades_raw
