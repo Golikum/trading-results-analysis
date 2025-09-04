@@ -1,0 +1,266 @@
+version: 2
+
+models:
+  # Dimension Tables
+  - name: dim_clients
+    description: "Client dimension with standardized segments and jurisdictions"
+    columns:
+      - name: client_key
+        description: "Surrogate key for client dimension"
+        tests:
+          - unique
+          - not_null
+      - name: client_id
+        description: "Natural key - internal client identifier"
+        tests:
+          - unique
+          - not_null
+      - name: client_external_id
+        description: "External client identifier"
+      - name: jurisdiction
+        description: "Standardized regulatory jurisdiction"
+      - name: segment
+        description: "Standardized client business segment"
+      - name: created_at
+        description: "Client creation timestamp"
+      - name: is_active
+        description: "Active status flag"
+
+  - name: dim_accounts
+    description: "Account dimension with platform and currency details"
+    columns:
+      - name: account_key
+        description: "Surrogate key for account dimension"
+        tests:
+          - unique
+          - not_null
+      - name: account_id
+        description: "Natural key - account identifier"
+        tests:
+          - unique
+          - not_null
+      - name: client_key
+        description: "Foreign key to client dimension"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_clients')
+              field: client_key
+      - name: platform
+        description: "Trading platform"
+      - name: base_currency
+        description: "Account base currency"
+      - name: account_status
+        description: "Current account status"
+      - name: created_at
+        description: "Account creation date"
+      - name: closed_at
+        description: "Account closure date"
+
+  - name: dim_symbols
+    description: "Symbol dimension with standardized asset class categorization"
+    columns:
+      - name: symbol_key
+        description: "Surrogate key for symbol dimension"
+        tests:
+          - unique
+          - not_null
+      - name: platform
+        description: "Trading platform"
+      - name: platform_symbol
+        description: "Platform-specific symbol"
+      - name: std_symbol
+        description: "Standardized symbol"
+        tests:
+          - not_null
+      - name: asset_class
+        description: "Asset class category"
+      - name: quote_currency
+        description: "Quote currency"
+      - name: tick_value
+        description: "Minimum price movement value"
+
+  - name: dim_dates
+    description: "Date dimension for time-based analysis"
+    columns:
+      - name: date_key
+        description: "Date in YYYYMMDD format"
+        tests:
+          - unique
+          - not_null
+      - name: date_actual
+        description: "Actual date"
+        tests:
+          - unique
+          - not_null
+      - name: year
+        description: "Year (YYYY)"
+      - name: quarter
+        description: "Quarter (Q1, Q2, Q3, Q4)"
+      - name: month
+        description: "Month number (1-12)"
+      - name: month_name
+        description: "Month name"
+      - name: week_of_year
+        description: "Week number in year"
+      - name: day_of_week
+        description: "Day of week (1=Sunday, 7=Saturday)"
+      - name: day_name
+        description: "Day name"
+      - name: is_weekend
+        description: "Weekend flag"
+      - name: is_holiday
+        description: "Holiday flag"
+
+  # Fact Tables
+  - name: fact_trades
+    description: "Granular trade transactions with enriched performance metrics"
+    columns:
+      - name: trade_key
+        description: "Surrogate key for trade fact"
+        tests:
+          - unique
+          - not_null
+      - name: trade_id
+        description: "Natural key - trade identifier"
+        tests:
+          - unique
+          - not_null
+      - name: account_key
+        description: "Foreign key to account dimension"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_accounts')
+              field: account_key
+      - name: client_key
+        description: "Foreign key to client dimension"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_clients')
+              field: client_key
+      - name: symbol_key
+        description: "Foreign key to symbol dimension"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_symbols')
+              field: symbol_key
+      - name: trade_date_key
+        description: "Foreign key to date dimension (trade date)"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_dates')
+              field: date_key
+      - name: side
+        description: "Trade side (buy/sell)"
+        tests:
+          - accepted_values:
+              values: ['buy', 'sell']
+      - name: volume
+        description: "Trade volume"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
+      - name: open_price
+        description: "Trade opening price"
+      - name: close_price
+        description: "Trade closing price"
+      - name: commission
+        description: "Commission amount"
+      - name: realized_pnl
+        description: "Realized profit/loss"
+      - name: net_pnl
+        description: "Net P&L (realized_pnl + commission)"
+      - name: trade_value
+        description: "Total trade value (volume * price)"
+
+  - name: fact_account_eod
+    description: "Daily account balances and equity positions"
+    columns:
+      - name: account_eod_key
+        description: "Surrogate key for account EOD fact"
+        tests:
+          - unique
+          - not_null
+      - name: account_key
+        description: "Foreign key to account dimension"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_accounts')
+              field: account_key
+      - name: client_key
+        description: "Foreign key to client dimension"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_clients')
+              field: client_key
+      - name: date_key
+        description: "Foreign key to date dimension"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_dates')
+              field: date_key
+      - name: balance
+        description: "Account balance"
+      - name: equity
+        description: "Account equity"
+      - name: floating_pnl
+        description: "Floating/unrealized P&L"
+      - name: margin_level
+        description: "Margin level percentage"
+      - name: equity_high_watermark
+        description: "Rolling maximum equity (for drawdown calculation)"
+      - name: equity_drawdown
+        description: "Current equity drawdown from high watermark"
+
+  - name: fact_client_performance_daily
+    description: "Aggregated daily client performance metrics"
+    columns:
+      - name: client_performance_key
+        description: "Surrogate key for client performance fact"
+        tests:
+          - unique
+          - not_null
+      - name: client_key
+        description: "Foreign key to client dimension"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_clients')
+              field: client_key
+      - name: date_key
+        description: "Foreign key to date dimension"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_dates')
+              field: date_key
+      - name: total_trades
+        description: "Number of trades executed"
+      - name: total_volume
+        description: "Total trading volume"
+      - name: total_commission
+        description: "Total commission paid"
+      - name: total_realized_pnl
+        description: "Total realized P&L"
+      - name: net_pnl
+        description: "Net P&L for the day"
+      - name: avg_trade_size
+        description: "Average trade size"
+      - name: win_rate
+        description: "Percentage of profitable trades"
+      - name: largest_win
+        description: "Largest winning trade"
+      - name: largest_loss
+        description: "Largest losing trade"
+    tests:
+      - unique:
+          column_name: "client_key || '_' || date_key"

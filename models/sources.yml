@@ -1,0 +1,149 @@
+version: 2
+
+sources:
+  - name: raw_trading_data
+    description: "Raw trading data exported from production systems"
+    database: your-gcp-project-id  # Replace with your actual GCP project ID
+    schema: raw_data
+    
+    tables:
+      - name: trades_raw
+        description: "Individual trade records from trading platforms"
+        columns:
+          - name: trade_id
+            description: "Unique identifier for each trade"
+            tests:
+              - unique
+              - not_null
+          - name: platform
+            description: "Trading platform where trade was executed"
+          - name: account_id
+            description: "Account identifier for the trade"
+            tests:
+              - not_null
+          - name: client_external_id
+            description: "External client identifier (may be null)"
+          - name: symbol
+            description: "Trading symbol/instrument"
+            tests:
+              - not_null
+          - name: side
+            description: "Trade side: buy or sell"
+            tests:
+              - accepted_values:
+                  values: ['buy', 'sell', 'BUY', 'SELL']
+          - name: volume
+            description: "Trade volume/quantity"
+            tests:
+              - not_null
+          - name: open_time
+            description: "Trade opening timestamp"
+          - name: close_time
+            description: "Trade closing timestamp"
+          - name: open_price
+            description: "Trade opening price"
+          - name: close_price
+            description: "Trade closing price"
+          - name: commission
+            description: "Commission charged (typically negative)"
+          - name: realized_pnl
+            description: "Realized profit/loss from the trade"
+          - name: book_flag
+            description: "Booking flag indicator"
+          - name: counterparty
+            description: "Trade counterparty"
+          - name: quote_currency
+            description: "Quote currency for the trade"
+          - name: status
+            description: "Trade status"
+
+      - name: accounts_raw
+        description: "Trading account registry with account details"
+        columns:
+          - name: account_id
+            description: "Unique account identifier"
+            tests:
+              - unique
+              - not_null
+          - name: platform
+            description: "Trading platform"
+          - name: client_id
+            description: "Internal client identifier"
+          - name: base_currency
+            description: "Account base currency"
+          - name: created_at
+            description: "Account creation timestamp"
+          - name: closed_at
+            description: "Account closure timestamp (null if active)"
+          - name: salesforce_account_id
+            description: "Salesforce CRM account ID"
+          - name: is_system
+            description: "System account flag"
+          - name: is_deleted
+            description: "Deleted account flag"
+
+      - name: clients_raw
+        description: "Client master data with segments and jurisdictions"
+        columns:
+          - name: client_id
+            description: "Unique client identifier"
+            tests:
+              - unique
+              - not_null
+          - name: client_external_id
+            description: "External client identifier"
+          - name: jurisdiction
+            description: "Client regulatory jurisdiction"
+          - name: segment
+            description: "Client business segment"
+          - name: created_at
+            description: "Client creation timestamp"
+
+      - name: balances_eod_raw
+        description: "End-of-day account balances and equity positions"
+        columns:
+          - name: account_id
+            description: "Account identifier"
+            tests:
+              - not_null
+          - name: platform
+            description: "Trading platform"
+          - name: date
+            description: "Balance date (end-of-day)"
+            tests:
+              - not_null
+          - name: balance
+            description: "Account balance"
+          - name: equity
+            description: "Account equity"
+          - name: floating_pnl
+            description: "Floating/unrealized P&L"
+          - name: credit
+            description: "Credit amount"
+          - name: margin_level
+            description: "Margin level percentage"
+
+      - name: symbols_ref
+        description: "Symbol normalization reference for cross-platform standardization"
+        columns:
+          - name: platform
+            description: "Trading platform"
+            tests:
+              - not_null
+          - name: platform_symbol
+            description: "Platform-specific symbol"
+            tests:
+              - not_null
+          - name: std_symbol
+            description: "Standardized symbol"
+            tests:
+              - not_null
+          - name: asset_class
+            description: "Asset class categorization"
+          - name: quote_currency
+            description: "Quote currency for the symbol"
+          - name: tick_value
+            description: "Minimum price movement value"
+        tests:
+          - unique:
+              column_name: "platform || '_' || platform_symbol"

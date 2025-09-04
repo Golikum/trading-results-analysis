@@ -1,0 +1,75 @@
+# Trading Results Analysis dbt Project
+name: 'trading_results_analysis'
+version: '1.0.0'
+config-version: 2
+
+# This setting configures which "profile" dbt uses for this project.
+profile: 'trading_results_analysis'
+
+# These configurations specify where dbt should look for different types of files.
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# Configuring models
+models:
+  trading_results_analysis:
+    # Config indicated by + and applies to all files under models/...
+    +materialized: view
+    
+    staging:
+      +materialized: view
+      +docs:
+        node_color: "#D3D3D3"  # Light gray for staging
+    
+    intermediate:
+      +materialized: view
+      +docs:
+        node_color: "#87CEEB"  # Sky blue for intermediate
+    
+    marts:
+      +materialized: table
+      +docs:
+        node_color: "#98FB98"  # Pale green for marts
+      
+      dimensions:
+        +materialized: table
+      
+      facts:
+        +materialized: table
+
+# Configure tests
+tests:
+  +store_failures: true
+  +severity: error
+
+# Configure sources
+sources:
+  trading_results_analysis:
+    +meta:
+      owner: "analytics_team"
+      
+# Configure snapshots
+snapshots:
+  trading_results_analysis:
+    +target_schema: snapshots
+    +strategy: timestamp
+    +updated_at: updated_at
+
+# Configure vars
+vars:
+  # Date range for analysis (can be overridden)
+  start_date: '2023-01-01'
+  end_date: '2024-12-31'
+  
+  # Business rules
+  min_trade_volume: 0.01
+  active_trader_min_trades: 1

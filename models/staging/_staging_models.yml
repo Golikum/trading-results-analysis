@@ -1,0 +1,143 @@
+version: 2
+
+models:
+  - name: stg_trades
+    description: "Staging table for trades with basic cleaning and standardization"
+    columns:
+      - name: trade_id
+        description: "Unique trade identifier"
+        tests:
+          - unique
+          - not_null
+      - name: platform
+        description: "Normalized platform name"
+      - name: account_id
+        description: "Account identifier"
+        tests:
+          - not_null
+      - name: client_external_id
+        description: "External client identifier (cleaned)"
+      - name: symbol
+        description: "Trading symbol"
+        tests:
+          - not_null
+      - name: side
+        description: "Standardized trade side (buy/sell)"
+        tests:
+          - accepted_values:
+              values: ['buy', 'sell']
+      - name: volume
+        description: "Trade volume"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
+      - name: open_time
+        description: "Trade opening timestamp (parsed)"
+      - name: close_time
+        description: "Trade closing timestamp (parsed)"
+      - name: open_price
+        description: "Trade opening price"
+      - name: close_price
+        description: "Trade closing price"
+      - name: commission
+        description: "Commission amount (negative values)"
+      - name: realized_pnl
+        description: "Realized profit/loss"
+      - name: net_pnl
+        description: "Net P&L (realized_pnl + commission)"
+      - name: quote_currency
+        description: "Quote currency"
+
+  - name: stg_accounts
+    description: "Staging table for accounts with validation and cleaning"
+    columns:
+      - name: account_id
+        description: "Unique account identifier"
+        tests:
+          - unique
+          - not_null
+      - name: platform
+        description: "Normalized platform name"
+      - name: client_id
+        description: "Internal client identifier"
+      - name: base_currency
+        description: "Account base currency"
+      - name: created_at
+        description: "Account creation timestamp"
+      - name: closed_at
+        description: "Account closure timestamp"
+      - name: is_system
+        description: "System account flag"
+        tests:
+          - accepted_values:
+              values: [true, false]
+      - name: is_deleted
+        description: "Deleted account flag"
+        tests:
+          - accepted_values:
+              values: [true, false]
+      - name: account_status
+        description: "Derived account status"
+
+  - name: stg_clients
+    description: "Staging table for clients with segment standardization"
+    columns:
+      - name: client_id
+        description: "Unique client identifier"
+        tests:
+          - unique
+          - not_null
+      - name: client_external_id
+        description: "External client identifier"
+      - name: jurisdiction
+        description: "Standardized jurisdiction code"
+      - name: segment
+        description: "Standardized client segment"
+      - name: created_at
+        description: "Client creation timestamp"
+
+  - name: stg_balances_eod
+    description: "Staging table for end-of-day balances"
+    columns:
+      - name: account_id
+        description: "Account identifier"
+        tests:
+          - not_null
+      - name: platform
+        description: "Trading platform"
+      - name: date
+        description: "Balance date"
+        tests:
+          - not_null
+      - name: balance
+        description: "Account balance"
+      - name: equity
+        description: "Account equity"
+      - name: floating_pnl
+        description: "Floating P&L"
+      - name: margin_level
+        description: "Margin level percentage"
+    tests:
+      - unique:
+          column_name: "account_id || '_' || date"
+
+  - name: stg_symbols_ref
+    description: "Staging table for symbol reference data"
+    columns:
+      - name: platform
+        description: "Trading platform"
+      - name: platform_symbol
+        description: "Platform-specific symbol"
+      - name: std_symbol
+        description: "Standardized symbol"
+      - name: asset_class
+        description: "Asset class category"
+      - name: quote_currency
+        description: "Quote currency"
+      - name: tick_value
+        description: "Tick value"
+    tests:
+      - unique:
+          column_name: "platform || '_' || platform_symbol"
