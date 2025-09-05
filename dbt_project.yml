@@ -39,6 +39,13 @@ models:
       +materialized: table
       +docs:
         node_color: "#FFB6C1"  # Light pink for facts
+    
+    marts:
+      +materialized: table
+      +database: dbt-learn-366003
+      +schema: trading_marts
+      +docs:
+        node_color: "#87CEEB"  # Sky blue for marts
 
 # Configure tests
 tests:

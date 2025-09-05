@@ -1,0 +1,59 @@
+version: 2
+
+models:
+  - name: mart_client_performance_ranking
+    description: "Client performance ranking based on total net P&L - answers business question about top/bottom performers"
+    columns:
+      - name: client_external_id
+        description: "External client identifier"
+        tests:
+          - not_null
+          - unique
+      - name: client_id
+        description: "Internal client identifier"
+        tests:
+          - not_null
+      - name: total_net_pnl
+        description: "Lifetime total net P&L for the client (primary ranking metric)"
+        tests:
+          - not_null
+      - name: total_realized_pnl
+        description: "Lifetime total realized P&L"
+        tests:
+          - not_null
+      - name: total_commission
+        description: "Lifetime total commission paid"
+        tests:
+          - not_null
+      - name: total_trades
+        description: "Total number of trades executed by client"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 1
+              inclusive: true
+      - name: avg_net_pnl_per_trade
+        description: "Average net P&L per trade"
+        tests:
+          - not_null
+      - name: first_trade_date
+        description: "Date of client's first trade"
+        tests:
+          - not_null
+      - name: last_trade_date
+        description: "Date of client's most recent trade"
+        tests:
+          - not_null
+      - name: performance_rank
+        description: "Performance ranking (1 = best performer)"
+        tests:
+          - not_null
+          - unique
+      - name: performance_category
+        description: "Performance categorization (Profitable, Break-even, Loss-making)"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Profitable', 'Break-even', 'Loss-making']
+      - name: _created_at
+        description: "Mart creation timestamp"
