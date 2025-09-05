@@ -57,3 +57,73 @@ models:
               values: ['Profitable', 'Break-even', 'Loss-making']
       - name: _created_at
         description: "Mart creation timestamp"
+
+  - name: mart_symbol_performance_ranking
+    description: "Symbol performance ranking based on total net P&L - answers business question about top/bottom performing symbols"
+    columns:
+      - name: symbol
+        description: "Standardized trading symbol"
+        tests:
+          - not_null
+          - unique
+      - name: total_net_pnl
+        description: "Lifetime total net P&L for the symbol (primary ranking metric)"
+        tests:
+          - not_null
+      - name: total_realized_pnl
+        description: "Lifetime total realized P&L"
+        tests:
+          - not_null
+      - name: total_commission
+        description: "Lifetime total commission paid"
+        tests:
+          - not_null
+      - name: total_trades
+        description: "Total number of trades executed for this symbol"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 1
+              inclusive: true
+      - name: unique_clients
+        description: "Number of unique clients who traded this symbol"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 1
+              inclusive: true
+      - name: avg_net_pnl_per_trade
+        description: "Average net P&L per trade for this symbol"
+        tests:
+          - not_null
+      - name: total_volume
+        description: "Total trading volume for this symbol"
+        tests:
+          - not_null
+      - name: first_trade_date
+        description: "Date of first trade for this symbol"
+        tests:
+          - not_null
+      - name: last_trade_date
+        description: "Date of most recent trade for this symbol"
+        tests:
+          - not_null
+      - name: performance_rank
+        description: "Performance ranking (1 = best performing symbol)"
+        tests:
+          - not_null
+          - unique
+      - name: performance_category
+        description: "Performance categorization (Profitable, Break-even, Loss-making)"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Profitable', 'Break-even', 'Loss-making']
+      - name: trading_intensity
+        description: "Trading volume categorization (High Volume, Medium Volume, Low Volume)"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['High Volume', 'Medium Volume', 'Low Volume']
+      - name: _created_at
+        description: "Mart creation timestamp"
