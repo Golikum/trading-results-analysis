@@ -30,9 +30,6 @@ cleaned_trades as (
         cast(commission as float64) as commission,
         cast(realized_pnl as float64) as realized_pnl,
         
-        -- Calculate net P&L (business rule: realized_pnl + commission)
-        cast(realized_pnl as float64) + cast(commission as float64) as net_pnl,
-        
         -- Additional fields
         trim(book_flag) as book_flag,
         trim(counterparty) as counterparty,

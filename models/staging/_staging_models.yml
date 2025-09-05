@@ -45,8 +45,6 @@ models:
         description: "Commission amount (negative values)"
       - name: realized_pnl
         description: "Realized profit/loss"
-      - name: net_pnl
-        description: "Net P&L (realized_pnl + commission)"
       - name: quote_currency
         description: "Quote currency"
 

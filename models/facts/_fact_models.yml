@@ -56,7 +56,7 @@ models:
         tests:
           - not_null
       - name: net_pnl
-        description: "Net P&L (realized_pnl + commission)"
+        description: "Net P&L calculated at fact layer (realized_pnl + commission)"
         tests:
           - not_null
       - name: book_flag
@@ -119,3 +119,43 @@ models:
     tests:
       - unique:
           column_name: "account_id || '_' || date"
+
+  - name: fact_client_performance_daily
+    description: "Daily aggregated client performance metrics from trades"
+    columns:
+      - name: client_id
+        description: "Internal client identifier from dimension"
+        tests:
+          - not_null
+      - name: client_external_id
+        description: "External client identifier"
+        tests:
+          - not_null
+      - name: date
+        description: "Trading date (derived from trade open_time)"
+        tests:
+          - not_null
+      - name: total_commission
+        description: "Sum of all commissions for the client on this date"
+        tests:
+          - not_null
+      - name: total_realized_pnl
+        description: "Sum of all realized P&L for the client on this date"
+        tests:
+          - not_null
+      - name: total_net_pnl
+        description: "Sum of all net P&L (realized_pnl + commission) for the client on this date"
+        tests:
+          - not_null
+      - name: total_trades
+        description: "Count of trades executed by the client on this date"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 1
+              inclusive: true
+      - name: _transformed_at
+        description: "Fact transformation timestamp"
+    tests:
+      - unique:
+          column_name: "client_id || '_' || date"

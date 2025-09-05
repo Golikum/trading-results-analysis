@@ -2,6 +2,7 @@
 -- Business improvements:
 -- 1. Resolve missing client_external_id values by joining through accounts and clients
 -- 2. Replace platform-specific symbols with standardized symbols from symbols reference
+-- 3. Calculate net P&L (realized_pnl + commission) at the fact layer
 
 with staging_trades as (
     select * from {{ ref('stg_trades') }}
@@ -65,7 +66,8 @@ final_fact_trades as (
         -- Financial metrics
         commission,
         realized_pnl,
-        net_pnl,
+        -- Calculate net P&L (business rule: realized_pnl + commission)
+        realized_pnl + commission as net_pnl,
         
         -- Additional fields
         book_flag,
