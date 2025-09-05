@@ -29,6 +29,8 @@ trades_enriched as (
             t.client_external_id,
             c.client_external_id
         ) as resolved_client_external_id,
+        -- Add client_id from dimension
+        c.client_id,
         -- Use standardized symbol from symbols reference
         s.std_symbol
         
@@ -49,6 +51,7 @@ final_fact_trades as (
         platform,
         account_id,
         resolved_client_external_id as client_external_id,
+        client_id,
         
         -- Trade details
         std_symbol as symbol,

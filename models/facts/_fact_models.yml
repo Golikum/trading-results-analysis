@@ -20,6 +20,8 @@ models:
           - not_null
       - name: client_external_id
         description: "External client identifier (resolved from missing values via account/client lookup)"
+      - name: client_id
+        description: "Internal client identifier from dimension"
       - name: symbol
         description: "Standardized trading symbol (std_symbol from symbols reference)"
         tests:

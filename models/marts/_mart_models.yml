@@ -127,3 +127,57 @@ models:
               values: ['High Volume', 'Medium Volume', 'Low Volume']
       - name: _created_at
         description: "Mart creation timestamp"
+
+  - name: mart_daily_client_account_activity
+    description: "Daily trading activity statistics by client and account combination"
+    columns:
+      - name: client_id
+        description: "Internal client identifier"
+        tests:
+          - not_null
+      - name: account_id
+        description: "Account identifier"
+        tests:
+          - not_null
+      - name: client_external_id
+        description: "External client identifier"
+      - name: trade_date
+        description: "Trading date (derived from close_time)"
+        tests:
+          - not_null
+      - name: total_net_pnl
+        description: "Sum of net P&L for this client/account/date"
+        tests:
+          - not_null
+      - name: total_realized_pnl
+        description: "Sum of realized P&L for this client/account/date"
+        tests:
+          - not_null
+      - name: total_commission
+        description: "Sum of commission for this client/account/date"
+        tests:
+          - not_null
+      - name: total_trades
+        description: "Number of trades for this client/account/date"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 1
+              inclusive: true
+      - name: total_volume
+        description: "Sum of trading volume for this client/account/date"
+        tests:
+          - not_null
+      - name: first_close_time
+        description: "First trade close time on this date"
+        tests:
+          - not_null
+      - name: last_close_time
+        description: "Last trade close time on this date"
+        tests:
+          - not_null
+      - name: _created_at
+        description: "Mart creation timestamp"
+    tests:
+      - unique:
+          column_name: "client_id || '_' || account_id || '_' || trade_date"
