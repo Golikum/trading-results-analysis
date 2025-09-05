@@ -42,8 +42,6 @@ models:
     
     marts:
       +materialized: table
-      +database: dbt-learn-366003
-      +schema: trading_marts
       +docs:
         node_color: "#87CEEB"  # Sky blue for marts
 

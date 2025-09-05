@@ -1,3 +1,8 @@
+{{ config(
+    materialized='table',
+    schema='trading_marts'
+) }}
+
 -- Client performance ranking mart based on total net P&L
 -- Business question: Who are the top and bottom performing clients?
 -- Granularity: One row per client, ordered from best to worst performer
