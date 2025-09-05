@@ -30,21 +30,15 @@ models:
       +docs:
         node_color: "#D3D3D3"  # Light gray for staging
     
-    intermediate:
-      +materialized: view
-      +docs:
-        node_color: "#87CEEB"  # Sky blue for intermediate
-    
-    marts:
+    dimensions:
       +materialized: table
       +docs:
-        node_color: "#98FB98"  # Pale green for marts
-      
-      dimensions:
-        +materialized: table
-      
-      facts:
-        +materialized: table
+        node_color: "#98FB98"  # Pale green for dimensions
+    
+    facts:
+      +materialized: table
+      +docs:
+        node_color: "#FFB6C1"  # Light pink for facts
 
 # Configure tests
 tests:

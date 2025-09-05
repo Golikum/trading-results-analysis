@@ -1,0 +1,120 @@
+version: 2
+
+models:
+  # Dimension Tables
+  - name: dim_client
+    description: "Client dimension with standardized segments and validated jurisdictions"
+    columns:
+      - name: client_id
+        description: "Natural key - internal client identifier"
+        tests:
+          - unique
+          - not_null
+      - name: client_external_id
+        description: "External client identifier used in trading systems"
+      - name: jurisdiction
+        description: "Regulatory jurisdiction (Unknown for null values)"
+        tests:
+          - not_null
+      - name: segment
+        description: "Standardized client business segment (Retail, Pro, VIP)"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Retail', 'Pro', 'VIP', 'Unknown']
+      - name: created_at
+        description: "Client creation timestamp"
+        tests:
+          - not_null
+      - name: _loaded_at
+        description: "Staging load timestamp"
+      - name: _transformed_at
+        description: "Dimension transformation timestamp"
+
+  - name: dim_account
+    description: "Account dimension with platform and currency details"
+    columns:
+      - name: account_id
+        description: "Natural key - account identifier"
+        tests:
+          - unique
+          - not_null
+      - name: platform
+        description: "Trading platform (normalized to lowercase)"
+        tests:
+          - not_null
+      - name: client_id
+        description: "Foreign key to client dimension"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_client')
+              field: client_id
+      - name: base_currency
+        description: "Account base currency (normalized to uppercase)"
+        tests:
+          - not_null
+      - name: created_at
+        description: "Account creation timestamp"
+        tests:
+          - not_null
+      - name: closed_at
+        description: "Account closure timestamp (null if still active)"
+      - name: salesforce_account_id
+        description: "Salesforce account identifier"
+      - name: is_system
+        description: "System account flag"
+        tests:
+          - not_null
+      - name: is_deleted
+        description: "Deleted account flag"
+        tests:
+          - not_null
+      - name: account_status
+        description: "Derived account status (active, closed, deleted, system)"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['active', 'closed', 'deleted', 'system']
+      - name: _loaded_at
+        description: "Staging load timestamp"
+      - name: _transformed_at
+        description: "Dimension transformation timestamp"
+
+  - name: dim_symbol
+    description: "Symbol dimension with standardized symbol reference data"
+    columns:
+      - name: platform
+        description: "Trading platform (normalized to lowercase)"
+        tests:
+          - not_null
+      - name: platform_symbol
+        description: "Platform-specific symbol identifier"
+        tests:
+          - not_null
+      - name: std_symbol
+        description: "Standardized symbol (normalized to uppercase)"
+        tests:
+          - not_null
+      - name: asset_class
+        description: "Asset class category"
+        tests:
+          - not_null
+      - name: quote_currency
+        description: "Quote currency (normalized to uppercase)"
+        tests:
+          - not_null
+      - name: tick_value
+        description: "Minimum price movement value"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
+      - name: _loaded_at
+        description: "Staging load timestamp"
+      - name: _transformed_at
+        description: "Dimension transformation timestamp"
+    tests:
+      - unique:
+          column_name: "platform || '_' || platform_symbol"
