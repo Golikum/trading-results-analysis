@@ -1,0 +1,121 @@
+version: 2
+
+models:
+  # Fact Tables
+  - name: fact_trades
+    description: "Granular trade transactions with enriched client linking and standardized symbols"
+    columns:
+      - name: trade_id
+        description: "Natural key - trade identifier"
+        tests:
+          - unique
+          - not_null
+      - name: platform
+        description: "Trading platform (normalized to lowercase)"
+        tests:
+          - not_null
+      - name: account_id
+        description: "Account identifier"
+        tests:
+          - not_null
+      - name: client_external_id
+        description: "External client identifier (resolved from missing values via account/client lookup)"
+      - name: symbol
+        description: "Standardized trading symbol (std_symbol from symbols reference)"
+        tests:
+          - not_null
+      - name: side
+        description: "Trade side"
+        tests:
+          - not_null
+      - name: volume
+        description: "Trade volume"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
+      - name: open_time
+        description: "Trade opening timestamp"
+        tests:
+          - not_null
+      - name: close_time
+        description: "Trade closing timestamp"
+      - name: open_price
+        description: "Trade opening price"
+        tests:
+          - not_null
+      - name: close_price
+        description: "Trade closing price"
+      - name: commission
+        description: "Commission amount"
+        tests:
+          - not_null
+      - name: realized_pnl
+        description: "Realized profit/loss"
+        tests:
+          - not_null
+      - name: net_pnl
+        description: "Net P&L (realized_pnl + commission)"
+        tests:
+          - not_null
+      - name: book_flag
+        description: "Book flag indicator"
+      - name: counterparty
+        description: "Trade counterparty"
+      - name: quote_currency
+        description: "Quote currency"
+      - name: status
+        description: "Trade status"
+        tests:
+          - not_null
+      - name: _loaded_at
+        description: "Staging load timestamp"
+      - name: _transformed_at
+        description: "Fact transformation timestamp"
+
+  - name: fact_account_eod
+    description: "Daily account balances and equity positions - passthrough from staging"
+    columns:
+      - name: account_id
+        description: "Account identifier"
+        tests:
+          - not_null
+      - name: platform
+        description: "Trading platform (normalized to lowercase)"
+        tests:
+          - not_null
+      - name: date
+        description: "Balance date"
+        tests:
+          - not_null
+      - name: balance
+        description: "Account balance"
+        tests:
+          - not_null
+      - name: equity
+        description: "Account equity"
+        tests:
+          - not_null
+      - name: floating_pnl
+        description: "Floating/unrealized P&L"
+        tests:
+          - not_null
+      - name: credit
+        description: "Credit amount"
+        tests:
+          - not_null
+      - name: margin_level
+        description: "Margin level percentage"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: _loaded_at
+        description: "Staging load timestamp"
+      - name: _transformed_at
+        description: "Fact transformation timestamp"
+    tests:
+      - unique:
+          column_name: "account_id || '_' || date"
