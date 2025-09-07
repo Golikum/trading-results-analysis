@@ -1,8 +1,9 @@
 -- Fact table for trades with enriched client linking and standardized symbols
 -- Business improvements:
--- 1. Resolve missing client_external_id values by joining through accounts and clients
--- 2. Replace platform-specific symbols with standardized symbols from symbols reference
--- 3. Calculate net P&L (realized_pnl + commission) at the fact layer
+-- 1. Resolve missing client_external_id values by joining through accounts and client dimension
+-- 2. Use standardized client segments from client dimension
+-- 3. Replace platform-specific symbols with standardized symbols from symbols reference
+-- 4. Calculate net P&L (realized_pnl + commission) at the fact layer
 
 with staging_trades as (
     select * from {{ ref('stg_trades') }}
@@ -12,8 +13,8 @@ staging_accounts as (
     select * from {{ ref('stg_accounts') }}
 ),
 
-staging_clients as (
-    select * from {{ ref('stg_clients') }}
+client_dimension as (
+    select * from {{ ref('dim_client') }}
 ),
 
 staging_symbols as (
@@ -38,7 +39,7 @@ trades_enriched as (
     from staging_trades t
     left join staging_accounts a
         on t.account_id = a.account_id
-    left join staging_clients c
+    left join client_dimension c
         on a.client_id = c.client_id
     left join staging_symbols s
         on t.platform = s.platform 
