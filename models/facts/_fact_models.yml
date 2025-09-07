@@ -22,6 +22,12 @@ models:
         description: "External client identifier (resolved from missing values via account/client lookup)"
       - name: client_id
         description: "Internal client identifier from dimension"
+      - name: segment
+        description: "Client business segment (Retail, Pro, VIP)"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Retail', 'Pro', 'VIP', 'Unknown']
       - name: symbol
         description: "Standardized trading symbol (std_symbol from symbols reference)"
         tests:
