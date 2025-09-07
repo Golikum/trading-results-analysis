@@ -181,3 +181,97 @@ models:
     tests:
       - unique:
           column_name: "client_id || '_' || account_id || '_' || trade_date"
+
+  - name: mart_symbol_trade_size_analysis
+    description: "Symbol trade size analysis with three different size metrics averaged per trading day"
+    columns:
+      - name: symbol
+        description: "Standardized trading symbol"
+        tests:
+          - not_null
+          - unique
+      - name: total_dataset_days
+        description: "Total number of trading days in the entire dataset"
+        tests:
+          - not_null
+      - name: trading_days
+        description: "Number of days this symbol was actively traded"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 1
+              inclusive: true
+      - name: total_trades
+        description: "Total number of trades for this symbol across all periods"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 1
+              inclusive: true
+      - name: total_volume
+        description: "Total volume traded for this symbol across all periods"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
+      - name: total_trade_value
+        description: "Total monetary value (volume × price) for this symbol across all periods"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
+      - name: total_risk_amount
+        description: "Total risk amount (absolute P&L) for this symbol across all periods"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
+      - name: avg_trade_size_volume
+        description: "Average trade size by volume (quantity) per day - Metric 1"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
+      - name: avg_trade_value
+        description: "Average trade value (volume × price) per day - Metric 2"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
+      - name: avg_trade_size_risk
+        description: "Average trade size by risk amount (absolute P&L) per day - Metric 3"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
+      - name: avg_trades_per_day
+        description: "Average number of trades executed per day for this symbol"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
+      - name: first_trade_date
+        description: "First trading date for this symbol"
+        tests:
+          - not_null
+      - name: last_trade_date
+        description: "Most recent trading date for this symbol"
+        tests:
+          - not_null
+      - name: trading_frequency_pct
+        description: "Trading frequency as decimal (days traded / total days)"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 1
+              inclusive: true
+      - name: _created_at
+        description: "Mart creation timestamp"
