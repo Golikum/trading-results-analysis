@@ -399,3 +399,28 @@ models:
               inclusive: false
       - name: _created_at
         description: "Mart creation timestamp"
+
+  - name: mart_account_drawdown_analysis
+    description: "Simple account drawdown analysis showing current drawdown status"
+    columns:
+      - name: account_id
+        description: "Account identifier"
+        tests:
+          - not_null
+          - unique
+      - name: high_water_mark
+        description: "Highest equity value ever reached"
+        tests:
+          - not_null
+      - name: current_equity
+        description: "Most recent equity value"
+        tests:
+          - not_null
+      - name: drawdown_value
+        description: "Absolute difference between current equity and high water mark"
+        tests:
+          - not_null
+      - name: drawdown_ratio
+        description: "Drawdown as percentage from high water mark"
+        tests:
+          - not_null
