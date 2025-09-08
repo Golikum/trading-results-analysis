@@ -10,7 +10,7 @@
 
 with account_eod as (
     select * from {{ ref('fact_account_eod') }}
-),
+)
 
 select
     account_id,
