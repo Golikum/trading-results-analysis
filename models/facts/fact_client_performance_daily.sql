@@ -27,7 +27,7 @@ trades_with_client as (
 daily_client_performance as (
     select
         -- Granularity keys
-        client_id,
+        c.client_id                 as client_id,
         client_external_id,
         trade_date as date,
         
