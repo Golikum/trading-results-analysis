@@ -2,6 +2,9 @@
 
 Analytics Engineering challenge: Transform raw trading data into clean, analysis-ready marts and deliver insights on trader performance, activity, and risk.
 
+## 📊 Interactive Dashboard
+View the full analysis in our [Looker Studio Dashboard](https://lookerstudio.google.com/s/mdZfMruL_io)
+
 ## 🏗️ Architecture
 
 ```
@@ -26,60 +29,6 @@ This project answers critical questions for brokerage leadership:
 | `balances_eod_raw.csv` | End-of-day account balances | account_id, date, balance, equity, margin_level |
 | `symbols_ref.csv` | Symbol normalization reference | platform_symbol, std_symbol, asset_class |
 
-## 🚀 Setup Instructions
-
-### Prerequisites
-
-1. **Google Cloud Project** with BigQuery API enabled
-2. **dbt Cloud account** (free tier)
-3. **GitHub account** for version control
-
-### Step 1: BigQuery Setup
-
-1. Create a new Google Cloud Project or use existing one
-2. Enable BigQuery API
-3. Create datasets:
-   ```sql
-   -- In BigQuery console
-   CREATE SCHEMA `your-project-id.raw_data`;
-   CREATE SCHEMA `your-project-id.staging`;
-   CREATE SCHEMA `your-project-id.marts`;
-   ```
-4. Upload CSV files to `raw_data` dataset
-5. Create a service account and download JSON key for dbt Cloud
-
-### Step 2: dbt Cloud Setup
-
-1. **Create New Project** in dbt Cloud
-2. **Connect to Repository**: Link this GitHub repository
-3. **Configure BigQuery Connection**:
-   - Upload service account JSON
-   - Set project ID and datasets
-   - Test connection
-4. **Update `models/sources.yml`**: Replace `your-gcp-project-id` with your actual project ID
-
-### Step 3: Install Dependencies
-
-```bash
-# In dbt Cloud IDE or locally
-dbt deps
-```
-
-### Step 4: Run the Project
-
-```bash
-# Test source data
-dbt source snapshot-freshness
-
-# Run staging models
-dbt run --models staging
-
-# Run all models
-dbt run
-
-# Run tests
-dbt test
-```
 
 ## 🏗️ Project Structure
 
@@ -87,70 +36,132 @@ dbt test
 trading-results-analysis/
 ├── models/
 │   ├── staging/          # Clean and standardize raw data
-│   ├── intermediate/     # Business logic and enrichment
-│   └── marts/           # Final dimensional model
-│       ├── dimensions/  # Dimension tables
-│       └── facts/       # Fact tables
-├── tests/               # Custom data quality tests
-├── macros/              # Reusable SQL functions
-├── analyses/            # Ad-hoc analysis queries
-├── snapshots/           # SCD2 snapshots
-└── seeds/              # Static reference data
+│   │   ├── stg_accounts.sql         # Account data cleaning
+│   │   ├── stg_balances_eod.sql     # EOD balance standardization
+│   │   ├── stg_clients.sql          # Client data normalization
+│   │   ├── stg_symbols_ref.sql      # Symbol reference mapping
+│   │   └── stg_trades.sql           # Trade data transformation
+│   ├── dimensions/       # Core business entities
+│   │   ├── dim_account.sql          # Account master data
+│   │   ├── dim_client.sql           # Client profiles and segments
+│   │   └── dim_symbol.sql           # Standardized trading instruments
+│   ├── facts/           # Transaction and event data
+│   │   ├── fact_account_eod.sql     # Daily account metrics
+│   │   ├── fact_client_performance_daily.sql  # Client daily performance
+│   │   └── fact_trades.sql          # Cleaned trade records
+│   └── marts/           # Business-specific analytics
+│       ├── mart_account_drawdown_analysis.sql    # Account risk metrics
+│       ├── mart_accounts_at_risk.sql            # Risk monitoring
+│       ├── mart_client_drawdown_analysis.sql     # Client risk assessment
+│       ├── mart_client_performance_ranking.sql   # Performance rankings
+│       ├── mart_daily_client_account_activity.sql # Activity tracking
+│       ├── mart_segment_trade_size_analysis.sql  # Trading patterns
+│       └── mart_symbol_performance_ranking.sql   # Symbol analytics
+└── macros/              # Reusable SQL functions
 ```
 
 ## 📊 Data Model
 
-### Staging Layer
-- `stg_trades` - Cleaned trade data
-- `stg_accounts` - Validated account information
-- `stg_clients` - Normalized client data
-- `stg_balances_eod` - Clean balance data
-- `stg_symbols_ref` - Symbol standardization
+### Model Layers
 
-### Marts Layer
-**Dimensions**:
-- `dim_clients` - Client master with segments and jurisdictions
-- `dim_accounts` - Account details with platform and currency info
-- `dim_symbols` - Normalized symbol reference with asset classes
-- `dim_dates` - Date dimension for time-based analysis
+**Staging**: Clean and standardize raw data from source files, handling data quality issues and standardizing formats.
 
-**Facts**:
-- `fact_trades` - Granular trade transactions with performance metrics
-- `fact_account_eod` - Daily account balances and equity positions
-- `fact_client_performance_daily` - Aggregated daily client performance
+**Dimensions**: Core reference data that provides context for analysis:
+- Client profiles with segments and jurisdictions
+- Account details with platform and status information
+- Standardized symbol reference with asset classes
+
+**Facts**: Transaction and event data:
+- Trade records with performance metrics
+- Daily account balance snapshots
+- Aggregated client daily performance
+
+**Marts**: Business-specific analytics models:
+- Performance rankings (client and symbol level)
+- Risk monitoring and drawdown analysis
+- Trading activity patterns and segment analysis
 
 ## 📈 Key Metrics & KPIs
 
-- **Net PnL**: `realized_pnl + commission`
-- **Active Traders**: Clients/accounts with trades in period
-- **Equity Drawdown**: Peak-to-trough equity decline
-- **Risk Indicators**: Deleted accounts still trading, low margin levels
+### Activity Metrics
+- **Active Traders Tracking**:
+  - Daily active clients and accounts count
+  - Weekly active clients and accounts count
+- **Average Trade Size Analysis**:
+  - By symbol (volume, trade value, risk amount)
+  - By client segment (VIP, Retail, Pro)
+  - Risk exposure
 
-## 🔧 Development Workflow
+### Risk Assessment
+- **Drawdown Analysis**:
+  - Account-level equity drawdown (current vs high water mark, ratio)
+  - Client-level equity drawdown
+  - Largest drawdowns monitoring
+- **Account Health**:
+  - Deleted accounts still trading
+  - Number of trades in deleted accounts
+  - Client risk exposure
 
-1. **Feature Branch**: Create branch for new features
-2. **Development**: Build and test models in dbt Cloud IDE
-3. **Testing**: Ensure all tests pass (`dbt test`)
-4. **Pull Request**: Submit for code review
-5. **Merge**: Deploy to production
+### Performance Metrics
+- **Client Level Performance**:
+  - Net PnL ranking (Top/Bottom 10 performers)
+- **Symbol Level Performance**:
+  - Net PnL by symbol (Top/Bottom 10 performers)
+
 
 ## 📋 Data Quality Framework
 
-- **Uniqueness**: Primary key constraints
-- **Referential Integrity**: Foreign key relationships
-- **Business Logic**: Net PnL calculations
-- **Completeness**: Required field validation
-- **Accepted Values**: Categorical field validation
+### dbt Tests (examples)
+```yaml
+version: 2
 
-## 🔗 Next Steps
+models:
+  - name: fact_trades
+    columns:
+      - name: trade_id
+        tests:
+          - unique
+          - not_null
+      - name: segment
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Retail', 'Pro', 'VIP', 'Unknown']
+      - name: volume
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
+  
+  - name: fact_account_eod
+    tests:
+      - unique:
+          column_name: "account_id || '_' || date"
+    columns:
+      - name: margin_level
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+  
+  - name: mart_client_performance_ranking
+    columns:
+      - name: performance_category
+        tests:
+          - accepted_values:
+              values: ['Profitable', 'Break-even', 'Loss-making']
+      - name: total_trades
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 1
+              inclusive: true
+```
 
-1. **Connect dbt Cloud** to this repository
-2. **Upload CSV data** to BigQuery raw dataset
-3. **Configure BigQuery connection** in dbt Cloud
-4. **Run initial models** and validate data quality
-5. **Build Looker Studio dashboard** for insights
-6. **Document findings** and recommendations
+The tests ensure data quality through:
+- Uniqueness checks (trade_id, composite keys)
+- Required field validation (not_null)
+- Value range validation (volumes, trades, margin levels)
+- Business category validation (segments, performance)
 
----
-
-*Built with ❤️ using modern data stack: dbt + BigQuery + Looker Studio*
