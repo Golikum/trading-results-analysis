@@ -111,57 +111,82 @@ trading-results-analysis/
 
 ## 📋 Data Quality Framework
 
-### dbt Tests (examples)
+### dbt Tests
+Our data quality framework includes various test types:
+
+1. **Uniqueness Tests**:
+   - Trade identifiers (`trade_id` in `fact_trades`)
+   - Composite keys (`account_id || '_' || date` in `fact_account_eod`)
+   - Performance rankings (`performance_rank` in `mart_client_performance_ranking`)
+
+2. **Range Validations**:
+   - Trading volumes (must be positive)
+   - Drawdown ratios (between -100% and 0%)
+   - Trading frequency (0 to 1 range)
+   - Performance metrics (minimum thresholds)
+
+3. **Category Validations**:
+   - Client segments (Retail, Pro, VIP)
+   - Performance categories (Profitable, Break-even, Loss-making)
+   - Trading intensity (High/Medium/Low Volume)
+
+4. **Relationship Checks**:
+   - Account references across fact tables
+   - Client linkage through dimensions
+   - Symbol standardization validation
+
+Example test configurations:
 ```yaml
 version: 2
 
 models:
+  - name: mart_client_performance_ranking
+    columns:
+      - name: client_id
+        tests:
+          - unique
+          - not_null
+      - name: performance_category
+        tests:
+          - accepted_values:
+              values: ['Profitable', 'Break-even', 'Loss-making']
+      - name: trading_frequency_pct
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 1
+              inclusive: true
+
   - name: fact_trades
     columns:
       - name: trade_id
         tests:
           - unique
           - not_null
-      - name: segment
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['Retail', 'Pro', 'VIP', 'Unknown']
       - name: volume
         tests:
-          - not_null
           - dbt_utils.accepted_range:
               min_value: 0
               inclusive: false
-  
-  - name: fact_account_eod
-    tests:
-      - unique:
-          column_name: "account_id || '_' || date"
-    columns:
-      - name: margin_level
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: true
-  
-  - name: mart_client_performance_ranking
-    columns:
-      - name: performance_category
+      - name: segment
         tests:
           - accepted_values:
-              values: ['Profitable', 'Break-even', 'Loss-making']
-      - name: total_trades
+              values: ['Retail', 'Pro', 'VIP', 'Unknown']
+
+  - name: mart_segment_trade_size_analysis
+    columns:
+      - name: segment
+        tests:
+          - unique
+          - not_null
+      - name: trading_intensity
+        tests:
+          - accepted_values:
+              values: ['High Volume', 'Medium Volume', 'Low Volume']
+      - name: avg_trades_per_day
         tests:
           - dbt_utils.accepted_range:
-              min_value: 1
-              inclusive: true
+              min_value: 0
+              inclusive: false
 ```
-
-The tests ensure data quality through:
-- Uniqueness checks (trade_id, composite keys)
-- Required field validation (not_null)
-- Value range validation (volumes, trades, margin levels)
-- Business category validation (segments, performance)
 
