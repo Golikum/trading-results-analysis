@@ -83,10 +83,14 @@ models:
         description: "Fact transformation timestamp"
 
   - name: fact_account_eod
-    description: "Daily account balances and equity positions - passthrough from staging"
+    description: "Daily account balances and equity positions with client linkage"
     columns:
       - name: account_id
         description: "Account identifier"
+        tests:
+          - not_null
+      - name: client_id
+        description: "Internal client identifier from account dimension"
         tests:
           - not_null
       - name: platform

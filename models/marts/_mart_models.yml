@@ -424,3 +424,39 @@ models:
         description: "Drawdown as percentage from high water mark"
         tests:
           - not_null
+          - dbt_utils.accepted_range:
+              min_value: -1
+              max_value: 0
+              inclusive: true
+
+  - name: mart_client_drawdown_analysis
+    description: "Client-level drawdown analysis showing current drawdown status for each client"
+    columns:
+      - name: client_id
+        description: "Internal client identifier"
+        tests:
+          - not_null
+          - unique
+      - name: high_water_mark
+        description: "Highest equity value ever reached by the client"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: current_equity
+        description: "Most recent equity value for the client"
+        tests:
+          - not_null
+      - name: drawdown_value
+        description: "Absolute difference between current equity and high water mark"
+        tests:
+          - not_null
+      - name: drawdown_ratio
+        description: "Drawdown as percentage from high water mark (negative indicates drawdown)"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: -100
+              max_value: 0
+              inclusive: true
