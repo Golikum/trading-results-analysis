@@ -30,9 +30,10 @@ trades_enriched as (
             t.client_external_id,
             c.client_external_id
         ) as resolved_client_external_id,
-        -- Add client details from dimension
+        -- Add client and account details from dimensions
         c.client_id,
         c.segment,
+        a.is_deleted as account_is_deleted,
         -- Use standardized symbol from symbols reference
         s.std_symbol
         
@@ -55,6 +56,7 @@ final_fact_trades as (
         resolved_client_external_id as client_external_id,
         client_id,
         segment,
+        account_is_deleted,
         
         -- Trade details
         std_symbol as symbol,

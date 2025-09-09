@@ -28,6 +28,10 @@ models:
           - not_null
           - accepted_values:
               values: ['Retail', 'Pro', 'VIP', 'Unknown']
+      - name: account_is_deleted
+        description: "Flag indicating if the account has been deleted"
+        tests:
+          - not_null
       - name: symbol
         description: "Standardized trading symbol (std_symbol from symbols reference)"
         tests:
