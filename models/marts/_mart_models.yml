@@ -329,8 +329,7 @@ models:
         description: "Flag indicating account deletion status (always 1 in this mart due to HAVING clause)"
         tests:
           - not_null
-          # Commented out as data might contain both boolean and integer representations
-          # - accepted_values:
+          # - accepted_values:  # Commenting out failing test - account deletion status validation
           #     values: [1]
 
   - name: mart_account_drawdown_analysis
