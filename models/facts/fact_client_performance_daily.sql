@@ -6,30 +6,13 @@ with fact_trades as (
     select * from {{ ref('fact_trades') }}
 ),
 
-dim_client as (
-    select * from {{ ref('dim_client') }}
-),
-
--- Join trades with client dimension to get client_id
-trades_with_client as (
-    select
-        t.*,
-        c.client_id,
-        -- Extract date from open_time for daily aggregation
-        date(t.open_time) as trade_date
-        
-    from fact_trades t
-    left join dim_client c
-        on t.client_external_id = c.client_external_id
-),
-
 -- Aggregate daily performance metrics by client
 daily_client_performance as (
     select
         -- Granularity keys
-        c.client_id                 as client_id,
+        client_id,
         client_external_id,
-        trade_date as date,
+        date(open_time) as date,
         
         -- Aggregated financial metrics (sum)
         sum(commission) as total_commission,
@@ -42,14 +25,14 @@ daily_client_performance as (
         -- Metadata
         current_timestamp() as _transformed_at
         
-    from trades_with_client
+    from fact_trades
     where client_id is not null  -- Only include trades with valid client linkage
-      and trade_date is not null  -- Only include trades with valid dates
+      and 'date' is not null  -- Only include trades with valid dates
     
     group by 
         client_id,
         client_external_id,
-        trade_date
+        date
 )
 
-select * from daily_client_performance
+select * from daily_client_performance   
