@@ -400,6 +400,32 @@ models:
       - name: _created_at
         description: "Mart creation timestamp"
 
+  - name: mart_accounts_at_risk
+    description: "Identifies accounts that are marked as deleted but still show trading activity, highlighting potential compliance or data quality issues"
+    columns:
+      - name: client_id
+        description: "Internal client identifier associated with the account"
+        tests:
+          - not_null
+      - name: account_id
+        description: "Account identifier showing risky behavior"
+        tests:
+          - not_null
+          - unique
+      - name: trades_number
+        description: "Number of trades executed on this account"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 1
+              inclusive: true
+      - name: is_account_deleted
+        description: "Flag indicating account deletion status (always 1 in this mart due to HAVING clause)"
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1]
+
   - name: mart_account_drawdown_analysis
     description: "Simple account drawdown analysis showing current drawdown status"
     columns:
