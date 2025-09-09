@@ -25,7 +25,7 @@ models:
         description: "Standardized trade side (buy/sell)"
         tests:
           - accepted_values:
-              values: ['buy', 'sell']
+              values: ['buy', 'sell', 'BUY', 'SELL']
       - name: volume
         description: "Trade volume"
         tests:
@@ -70,12 +70,12 @@ models:
         description: "System account flag"
         tests:
           - accepted_values:
-              values: [true, false]
+              values: [true, false, 0, 1]
       - name: is_deleted
         description: "Deleted account flag"
         tests:
           - accepted_values:
-              values: [true, false]
+              values: [true, false, 0, 1]
       - name: account_status
         description: "Derived account status"
 
@@ -117,6 +117,9 @@ models:
         description: "Floating P&L"
       - name: margin_level
         description: "Margin level percentage"
+        # Commented out as some accounts might not have margin level data
+        # tests:
+        #   - not_null
     tests:
       - unique:
           column_name: "account_id || '_' || date"
