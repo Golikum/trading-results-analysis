@@ -7,7 +7,7 @@
 -- Business question: Which clients/accounts are at risk
 -- Accounts marked is_deleted = true but still trading.
 
-with fact_trades as (
+with trades_data as (
     select * from {{ ref('fact_trades') }}
 )
 
