@@ -13,9 +13,9 @@ account_dimension as (
 final_fact_account_eod as (
     select
         -- Primary identifiers
-        account_id,
+        b.account_id            as account_id,
         client_id,
-        platform,
+        b.platform              as platform,
         date,
         
         -- Financial metrics
@@ -26,7 +26,7 @@ final_fact_account_eod as (
         margin_level,
         
         -- Metadata
-        _loaded_at,
+        b._loaded_at            as _loaded_at,
         current_timestamp() as _transformed_at
         
     from staging_balances_eod b
